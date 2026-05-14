@@ -1,15 +1,17 @@
 # eos
 
-CLI for managing [ETC Eos Family Software](https://github.com/pedropipehitter/eos-software) release downloads on macOS. Pulls the Mac `.dmg` for any version, manages local copies, and keeps the install footprint small between shows.
+A small CLI for managing ETC Eos Family Software release downloads on macOS. Pulls the Mac `.dmg` for any release tag from a GitHub releases repo. Built because I switch Eos versions between shows (v3.3.6 on new work, v2.x on legacy shows still locked to it) and wanted a one-liner instead of clicking through release pages.
+
+This is a personal tool, open-sourced in case the pattern is useful. The actual `.dmg` files live in a private repo (`pedropipehitter/eos-software`), so the CLI is only functional for collaborators I've granted access to. Anyone else is welcome to read the source as a reference for similar private-release-management workflows.
 
 ## Install
 
-```sh
+```
 brew tap pedropipehitter/eos
 brew install eos
 ```
 
-Requires `gh` authenticated to a GitHub account with access to the `eos-software` releases repo (brew installs `gh` as a dependency, but you'll still need to run `gh auth login` once).
+Requires `gh` authenticated against an account with access to the release repo. Homebrew installs `gh` as a dependency. Run `gh auth login` once if you haven't already.
 
 ## Usage
 
@@ -22,20 +24,23 @@ eos rm <version>          delete one local version
 eos clean                 keep newest local version, delete the rest
 ```
 
-Versions can be given as `3.3.6` or `v3.3.6`.
-
-Downloads live in `${EOS_HOME:-$HOME/.eos}/versions/<tag>/`.
+Version strings accept either `3.3.6` or `v3.3.6`. The asset pattern is `Eos-vX.Y.Z-Mac.dmg`.
 
 ## Examples
 
-```sh
-eos latest          # newest release overall
-eos latest 2        # newest v2.x release
-eos get 3.2.10      # specific version
-eos installed       # what's on disk
-eos clean           # keep only the newest local copy
 ```
+eos latest                # newest release overall
+eos latest 2              # newest in the v2.x line, for shows still on v2
+eos get 3.2.10            # specific version
+eos clean                 # keep one copy, drop the rest
+```
+
+## Notes
+
+Downloads land in `${EOS_HOME:-$HOME/.eos}/versions/<tag>/`.
+
+The private-repo caveat is the load-bearing one. Without read access to `pedropipehitter/eos-software`, `list`, `get`, and `latest` will fail at the `gh` layer. The local commands (`installed`, `rm`, `clean`) work regardless.
 
 ## License
 
-MIT
+MIT.
