@@ -1,6 +1,6 @@
 # eos
 
-A small CLI for managing ETC Eos Family Software release downloads. Pulls the Mac `.dmg` or the Windows `.exe` (also the installer for ETC consoles, which run Windows) for any release tag from a GitHub releases repo. Built because I switch Eos versions between shows (v3.3.6 on new work, v2.x on legacy shows still locked to it) and wanted a one-liner instead of clicking through release pages.
+A small CLI for managing ETC Eos Family Software release downloads. Pulls the Mac `.dmg` or the Windows `.exe` (also the installer for ETC consoles, which run Windows) for any release tag from a GitHub releases repo. Built because I switch Eos versions between shows (v3.3.6 on one show, v2.x on the next at a house with a Windows XP-locked Ion) and wanted a one-liner for my show laptop and quick LD-client setups, rather than clicking through release pages.
 
 This is a personal tool, open-sourced in case the pattern is useful. The actual `.dmg` files live in a private repo (`pedropipehitter/eos-software`), so the CLI is only functional for collaborators I've granted access to. Anyone else is welcome to read the source as a reference for similar private-release-management workflows.
 
