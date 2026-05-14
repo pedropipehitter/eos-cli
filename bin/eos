@@ -24,18 +24,36 @@ cmd_list() {
 }
 
 cmd_get() {
-  [[ $# -ge 1 ]] || die "usage: eos get <version>"
+  local platform=mac pattern='*Mac*' args=()
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --pc)  platform=pc;  pattern='*PC*';  shift ;;
+      --mac) platform=mac; pattern='*Mac*'; shift ;;
+      --)    shift; args+=("$@"); break ;;
+      -*)    die "unknown flag: $1" ;;
+      *)     args+=("$1"); shift ;;
+    esac
+  done
+  [[ ${#args[@]} -ge 1 ]] || die "usage: eos get [--pc|--mac] <version>"
   local tag dest
-  tag=$(normalize_tag "$1")
+  tag=$(normalize_tag "${args[0]}")
   dest="$ROOT/$tag"
   mkdir -p "$dest"
-  echo "Downloading $tag to $dest"
-  gh release download "$tag" -R "$REPO" -D "$dest" --pattern '*Mac*' --clobber
+  echo "Downloading $tag ($platform) to $dest"
+  gh release download "$tag" -R "$REPO" -D "$dest" --pattern "$pattern" --clobber
   ls -lh "$dest"
 }
 
 cmd_latest() {
-  local major="${1:-}" tag
+  local platform_flag="" major="" args=()
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --pc|--mac) platform_flag="$1"; shift ;;
+      *)          args+=("$1"); shift ;;
+    esac
+  done
+  major="${args[0]:-}"
+  local tag
   if [[ -z "$major" ]]; then
     tag=$(gh release view -R "$REPO" --json tagName -q .tagName)
   else
@@ -45,7 +63,11 @@ cmd_latest() {
           | tail -1)
     [[ -n "$tag" ]] || die "no releases found for major version $major"
   fi
-  cmd_get "$tag"
+  if [[ -n "$platform_flag" ]]; then
+    cmd_get "$platform_flag" "$tag"
+  else
+    cmd_get "$tag"
+  fi
 }
 
 cmd_installed() {
@@ -80,13 +102,17 @@ usage() {
 eos: manage ETC Eos Family Software releases from $REPO
 
 Usage:
-  eos list                  list remote release tags
-  eos get <version>         download the Mac .dmg for that version
-  eos latest [major]        download the newest overall, or newest in a major
-                            line (e.g. \`eos latest 2\` for the newest v2.x)
-  eos installed             list local downloads with sizes
-  eos rm <version>          delete one local version
-  eos clean                 keep newest local version, delete the rest
+  eos list                            list remote release tags
+  eos get [--pc|--mac] <version>      download the installer for that version
+  eos latest [--pc|--mac] [major]     download the newest overall, or newest
+                                      in a major line (e.g. \`eos latest 2\`)
+  eos installed                       list local downloads with sizes
+  eos rm <version>                    delete one local version
+  eos clean                           keep newest local version, delete rest
+
+Platform: defaults to --mac (.dmg). Use --pc to get the Windows installer
+(.exe), which is also the installer for ETC consoles (they run Windows).
+Mac and PC files for the same version coexist in the same tag folder.
 
 Versions can be given as \`3.3.6\` or \`v3.3.6\`.
 Downloads live in \${EOS_HOME:-\$HOME/.eos}/versions/<tag>/
