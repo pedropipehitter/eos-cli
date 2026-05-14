@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+# eos — manage ETC Eos Family Software release downloads
+# https://github.com/pedropipehitter/eos-cli
+
+set -euo pipefail
+
+REPO="pedropipehitter/eos-software"
+ROOT="${EOS_HOME:-$HOME/.eos}/versions"
+
+die() { echo "eos: $*" >&2; exit 1; }
+need() { command -v "$1" >/dev/null 2>&1 || die "missing dependency: $1"; }
+
+need gh
+
+normalize_tag() {
+  local v="$1"
+  [[ -z "$v" ]] && die "version required"
+  [[ "$v" == v* ]] || v="v$v"
+  printf '%s' "$v"
+}
+
+cmd_list() {
+  gh release list -R "$REPO" -L 100
+}
+
+cmd_get() {
+  [[ $# -ge 1 ]] || die "usage: eos get <version>"
+  local tag dest
+  tag=$(normalize_tag "$1")
+  dest="$ROOT/$tag"
+  mkdir -p "$dest"
+  echo "Downloading $tag to $dest"
+  gh release download "$tag" -R "$REPO" -D "$dest" --pattern '*Mac*' --clobber
+  ls -lh "$dest"
+}
+
+cmd_latest() {
+  local major="${1:-}" tag
+  if [[ -z "$major" ]]; then
+    tag=$(gh release view -R "$REPO" --json tagName -q .tagName)
+  else
+    tag=$(gh release list -R "$REPO" -L 200 --json tagName -q '.[].tagName' \
+          | grep -E "^v${major}\." \
+          | sort -V \
+          | tail -1)
+    [[ -n "$tag" ]] || die "no releases found for major version $major"
+  fi
+  cmd_get "$tag"
+}
+
+cmd_installed() {
+  if [[ ! -d "$ROOT" ]] || [[ -z "$(ls -A "$ROOT" 2>/dev/null)" ]]; then
+    echo "(no installed versions)"
+    return 0
+  fi
+  du -sh "$ROOT"/*/ 2>/dev/null | sort -k2
+}
+
+cmd_rm() {
+  [[ $# -ge 1 ]] || die "usage: eos rm <version>"
+  local tag dir
+  tag=$(normalize_tag "$1")
+  dir="$ROOT/$tag"
+  [[ -d "$dir" ]] || die "not installed: $tag"
+  rm -rf "$dir"
+  echo "Removed $tag"
+}
+
+cmd_clean() {
+  [[ -d "$ROOT" ]] || { echo "(nothing to clean)"; return 0; }
+  local keep
+  keep=$(ls -1 "$ROOT" 2>/dev/null | sort -V | tail -1) || true
+  [[ -n "$keep" ]] || { echo "(nothing to clean)"; return 0; }
+  echo "Keeping $keep"
+  find "$ROOT" -mindepth 1 -maxdepth 1 -type d ! -name "$keep" -print -exec rm -rf {} +
+}
+
+usage() {
+  cat <<EOF
+eos — manage ETC Eos Family Software releases from $REPO
+
+Usage:
+  eos list                  list remote release tags
+  eos get <version>         download the Mac .dmg for that version
+  eos latest [major]        download the newest overall, or newest in a major
+                            line (e.g. \`eos latest 2\` for the newest v2.x)
+  eos installed             list local downloads with sizes
+  eos rm <version>          delete one local version
+  eos clean                 keep newest local version, delete the rest
+
+Versions can be given as \`3.3.6\` or \`v3.3.6\`.
+Downloads live in \${EOS_HOME:-\$HOME/.eos}/versions/<tag>/
+EOF
+}
+
+case "${1:-}" in
+  list)       shift; cmd_list "$@" ;;
+  get)        shift; cmd_get "$@" ;;
+  latest)     shift; cmd_latest "$@" ;;
+  installed)  shift; cmd_installed "$@" ;;
+  rm)         shift; cmd_rm "$@" ;;
+  clean)      shift; cmd_clean "$@" ;;
+  ""|-h|--help|help) usage ;;
+  *) echo "eos: unknown command: $1" >&2; usage >&2; exit 2 ;;
+esac
