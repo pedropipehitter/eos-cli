@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# eos — manage ETC Eos Family Software release downloads
+# eos: manage ETC Eos Family Software release downloads
 # https://github.com/pedropipehitter/eos-cli
 
 set -euo pipefail
@@ -77,7 +77,7 @@ cmd_clean() {
 
 usage() {
   cat <<EOF
-eos — manage ETC Eos Family Software releases from $REPO
+eos: manage ETC Eos Family Software releases from $REPO
 
 Usage:
   eos list                  list remote release tags
