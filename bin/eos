@@ -110,7 +110,7 @@ Usage:
   eos rm <version>                    delete one local version
   eos clean                           keep newest local version, delete rest
 
-Platform: defaults to --mac (.dmg). Use --pc to get the Windows installer
+Platform: defaults to --mac (.pkg). Use --pc to get the Windows installer
 (.exe), which is also the installer for ETC consoles (they run Windows).
 Mac and PC files for the same version coexist in the same tag folder.
 

@@ -1,6 +1,6 @@
 # eos
 
-A small CLI for managing ETC Eos Family Software release downloads. Pulls the Mac `.dmg` or the Windows `.exe` (also what ETC consoles run) for any release tag, in one command.
+A small CLI for managing ETC Eos Family Software release downloads. Pulls the Mac `.pkg` or the Windows `.exe` (also what ETC consoles run) for any release tag, in one command.
 
 I built this because I switch Eos versions between shows. One house runs v3.3.6 on a current console. The next is on v2.x because the booth Ion has not been touched since Windows XP. Clicking through release pages every time I set up a show laptop got old.
 
@@ -26,7 +26,7 @@ eos rm <version>                    delete one local version
 eos clean                           keep newest local version, delete the rest
 ```
 
-Platform defaults to `--mac` (`Eos-vX.Y.Z-Mac.dmg`). Use `--pc` for the Windows installer (`Eos-vX.Y.Z-PC.exe`), which is also what ETC consoles run. Mac and PC files for the same version live in the same tag folder, so grabbing both is safe.
+Platform defaults to `--mac` (`Eos-vX.Y.Z-Mac.pkg`). Use `--pc` for the Windows installer (`Eos-vX.Y.Z-PC.exe`), which is also what ETC consoles run. Mac and PC files for the same version live in the same tag folder, so grabbing both is safe.
 
 Version strings accept either `3.3.6` or `v3.3.6`.
 
